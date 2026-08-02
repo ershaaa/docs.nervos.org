@@ -27,7 +27,7 @@ export function buildCccClient(network: Network) {
       : network === "testnet"
         ? new ccc.ClientPublicTestnet()
         : new ccc.ClientPublicTestnet({
-            url: "http://localhost:28114", // the default offckb devnet proxy rpc url
+            url: "https://glowing-winner-gx5rv949rgp3xx5-8114.app.github.dev/", // the default offckb devnet proxy rpc url
             scripts: DEVNET_SCRIPTS as any,
           });
 

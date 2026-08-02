@@ -55,6 +55,7 @@ export async function unlock(
   fromAddr: string,
   toAddr: string,
   amountInCKB: string,
+  unlockPreimage: string // <- Tambahan parameter preimage
 ): Promise<string> {
   const fromScript = (await ccc.Address.fromString(fromAddr, cccClient)).script;
   const toScript = (await ccc.Address.fromString(toAddr, cccClient)).script;
@@ -69,8 +70,7 @@ export async function unlock(
   // CCC transactions are easy to be edited
   tx.outputs.forEach((output, i) => {
     if (output.capacity > ccc.fixedPointFrom(amountInCKB)) {
-      alert(`Insufficient capacity at output ${i} to store data`);
-      return;
+      throw new Error(`Insufficient capacity at output ${i} to store data`); // Mengganti alert dengan error
     }
     output.capacity = ccc.fixedPointFrom(amountInCKB);
   });
@@ -92,9 +92,11 @@ export async function unlock(
     readSigner,
     ccc.fixedPointFrom(occupiedSize),
   );
+  
   const balanceDiff =
     (await tx.getInputsCapacity(cccClient)) - tx.getOutputsCapacity();
   console.log("balanceDiff: ", balanceDiff);
+  
   if (balanceDiff > ccc.Zero) {
     tx.addOutput({
       lock: fromScript,
@@ -102,13 +104,13 @@ export async function unlock(
     });
   }
 
-  // fill the witness with preimage
-  const preimageAnswer = window.prompt("please enter the preimage: ");
-  if (preimageAnswer == null) {
-    throw new Error("user abort input!");
+  // Menggunakan parameter unlockPreimage bukan window.prompt
+  if (!unlockPreimage) {
+    throw new Error("Preimage for unlock cannot be empty!");
   }
+  
   const newWitnessArgs = new ccc.WitnessArgs(
-    stringToBytesHex(preimageAnswer) as `0x${string}`,
+    stringToBytesHex(unlockPreimage) as `0x${string}`,
   );
   console.log(`newWitnessArgs: ${JSON.stringify(newWitnessArgs)}`);
   tx.setWitnessArgsAt(0, newWitnessArgs);

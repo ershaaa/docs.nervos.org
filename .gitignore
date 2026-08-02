@@ -15,3 +15,5 @@ website/.docusaurus
 website/.lycheecache
 
 .vscode/
+tmux-server-*.log
+*.log
